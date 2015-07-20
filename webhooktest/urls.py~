@@ -8,4 +8,6 @@ urlpatterns = patterns('',
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', 'webhooktest.views.home', name='home'),
+
+    (r'^', include('webhook.urls')),
 )
