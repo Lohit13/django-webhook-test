@@ -3,26 +3,32 @@ from django.template import RequestContext
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.crypto import constant_time_compare
-import json, hmac
+import json, hmac, base64, hashlib
 
 
-def verify(signature, payload):
-    digest = hmac.new('KEYHERE') #Just for testing. In production, we'll import from settings or use an ENV
-    digest.update(payload)
-    key = digest.hexdigest()
-    key = 'sha1=' + key
-    return constant_time_compare(key, signature)
+#Checking for IP for now.
+#TODO : validate hash.minor.
+def verify(ip):
+    ip = ip.split('.')
+    if ip[0]=='192' and ip[1]=='30':
+        if int(ip[2])>=252 and int(ip[2])<=255:
+            if int(ip[3])>=0 and int(ip[3])<=255:
+                return True
+            else:
+                return False
+        else:
+            return False
+    else:
+        return False
+
 
 @csrf_exempt
 def home(request):
-    try:
-        headers = request.META
-	signature = headers['HTTP_X_HUB_SIGNATURE']
-	delivery = headers['HTTP_X_GITHUB_DELIVERY']
-	ctype = headers['CONTENT_TYPE']
-	if ctype=='application/json':
-	    payload = request.body
-	    if verify(signature, payload):
-    	        return HttpResponse('TRUE')		
-    except:
+    if request.META.get('CONTENT_TYPE') == 'application/json':
+        if verify(request.META.get('HTTP_X_FORWARDED_FOR')):
+            payload = json.loads(request.body)
+            return HttpResponse(payload)
+        else:
+            raise Http404
+    else:
         raise Http404
