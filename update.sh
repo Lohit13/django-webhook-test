@@ -5,4 +5,4 @@ kill $waitressid
 #Pulling changes
 cd `pwd`
 git pull
-waitress-serve --port=80 webhooktest.wgsi:application
+sudo waitress-serve --port=80 webhooktest.wgsi:application
