@@ -27,7 +27,7 @@ def verify(ip):
 @csrf_exempt
 def home(request):
 	if request.META.get('CONTENT_TYPE') == 'application/json':
-		if verify(request.META.get('X_FORWARDED_FOR')):
+		if verify(request.META.get('REMOTE_ADDR')):
 			cmd = settings.BASE_DIR+"/update.sh"
 			os.system('%s'%(cmd))
 			return HttpResponse("All done!")
